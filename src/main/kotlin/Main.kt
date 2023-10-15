@@ -26,6 +26,7 @@ import kotlin.io.path.writer
 
 val propertiesPath: Path = Path.of("app.properties")
 lateinit var properties: Properties
+const val dryRunKey = "dryRun"
 const val csvNameKey = "csvName"
 const val modrinthUsernameKey = "modrinthUsername"
 const val modrinthUserAgentKey = "modrinthUserAgent"
@@ -81,10 +82,14 @@ suspend fun main() {
 	splitTime = stopwatch.splitAndGetString()
 	println("Converted projects ($splitTime)")
 
-	println("\nUpdating Gist")
-	updateGist(getProp(githubTokenKey), GitHubGistContent.of(getProp(csvNameKey), csvString))
-	splitTime = stopwatch.splitAndGetString()
-	println("Updated Gist ($splitTime)")
+	if (getProp(dryRunKey).toBoolean()) {
+		println("\n(DRY RUN ENABLED) Updated CSV:\n$csvString")
+	} else {
+		println("\nUpdating Gist")
+		updateGist(getProp(githubTokenKey), GitHubGistContent.of(getProp(csvNameKey), csvString))
+		splitTime = stopwatch.splitAndGetString()
+		println("Updated Gist ($splitTime)")
+	}
 
 	stopwatch.stop()
 	println("\nFinished (${stopwatch.formatTime()})")
@@ -100,6 +105,7 @@ fun loadProperties() {
 		properties = Properties().apply { propertiesPath.reader().use { load(it) } }
 	} else {
 		Properties().run {
+			setProperty(dryRunKey, "false")
 			setProperty(csvNameKey, "modrinthProjectAnalytics.csv")
 			setProperty(modrinthUsernameKey, "")
 			setProperty(modrinthUserAgentKey, "")
