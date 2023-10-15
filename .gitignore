@@ -5,6 +5,7 @@ build/
 !**/src/test/**/build/
 
 *.csv
+app.properties
 
 ### IntelliJ IDEA ###
 .idea
