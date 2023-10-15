@@ -1,7 +1,12 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     kotlin("jvm") version "1.9.10"
     kotlin("plugin.serialization") version "1.9.10"
     application
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    java
+    `maven-publish`
 }
 
 group = "brightspark"
@@ -32,4 +37,27 @@ kotlin {
 
 application {
     mainClass.set("MainKt")
+}
+
+tasks.getByName<ShadowJar>("shadowJar") {
+    archiveClassifier.set("")
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/thebrightspark/ModrinthAnalyticsGatherer")
+            credentials {
+                username = project.findProperty("gpr.user")?.toString() ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key")?.toString() ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("ModrinthAnalyticsGatherer") {
+            artifactId = "ModrinthAnalyticsGatherer"
+            from(components["java"])
+        }
+    }
 }
